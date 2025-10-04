@@ -1,0 +1,255 @@
+@AntiSpam_HostAddress = http://localhost:5250
+@AntiSpam_HostAddress_Https = https://localhost:7037
+
+### ==========================================
+### TEXT ANALYSIS TESTS
+### ==========================================
+
+### 1. Analyze normal text
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/text
+Content-Type: application/json
+
+{
+  "text": "Hey, how are you doing today? Just wanted to check in and see if you're free for lunch."
+}
+
+### 2. Analyze spam text with URLs and spam words
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/text
+Content-Type: application/json
+
+{
+  "text": "CONGRATULATIONS!!! You WON $1000000 FREE MONEY! Click here NOW: http://scam.com http://phishing.net Call +1-555-123-4567 for your FREE prize!!!"
+}
+
+### 3. Analyze text with WhatsApp solicitation
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/text
+Content-Type: application/json
+
+{
+  "text": "Hey gorgeous 💋 wanna make quick cash? WhatsApp me at wa.me/1234567890 for adult content and betting tips! 🎰💰"
+}
+
+### 4. Analyze obfuscated spam text
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/text
+Content-Type: application/json
+
+{
+  "text": "Fr33 V!@gr@ and C!@l!s!! Best 0ffer ever! C1ick now to w1nnnnnnn big prizes!!!"
+}
+
+### ==========================================
+### IMAGE ANALYSIS TESTS
+### ==========================================
+
+### 5. Upload and analyze an image (multipart/form-data)
+### Note: Replace the file path with your actual image file
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/image
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="formFile"; filename="test-image.jpg"
+Content-Type: image/jpeg
+
+< ./test-image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ==========================================
+### BEHAVIOR ANALYSIS TESTS
+### ==========================================
+
+### 6. Analyze normal user behavior
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/behavior
+Content-Type: application/json
+
+{
+  "userId": "user_normal_001",
+  "events": [
+    {
+      "timestamp": "2025-10-04T10:00:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_001",
+      "deviceId": "device_001",
+      "payloadSize": 256
+    },
+    {
+      "timestamp": "2025-10-04T11:30:00Z",
+      "kind": "comment",
+      "ipHash": "ip_hash_001",
+      "deviceId": "device_001",
+      "payloadSize": 128
+    },
+    {
+      "timestamp": "2025-10-04T14:00:00Z",
+      "kind": "like",
+      "ipHash": "ip_hash_001",
+      "deviceId": "device_001",
+      "payloadSize": 64
+    }
+  ],
+  "lookback": "24:00:00"
+}
+
+### 7. Analyze suspicious behavior (burst activity, IP rotation)
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/behavior
+Content-Type: application/json
+
+{
+  "userId": "user_suspicious_001",
+  "events": [
+    {
+      "timestamp": "2025-10-04T02:00:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_001",
+      "deviceId": "device_001",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:01:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_002",
+      "deviceId": "device_002",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:02:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_003",
+      "deviceId": "device_003",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:03:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_004",
+      "deviceId": "device_004",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:04:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_005",
+      "deviceId": "device_005",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:05:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_006",
+      "deviceId": "device_006",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:06:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_007",
+      "deviceId": "device_007",
+      "payloadSize": 512
+    }
+  ],
+  "lookback": "24:00:00"
+}
+
+### ==========================================
+### COMBINED SPAM SCORE TESTS
+### ==========================================
+
+### 8. Combined analysis - Clean content
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/score
+Content-Type: application/json
+
+{
+  "userId": "user_clean_001",
+  "text": "Thanks for the help! Looking forward to our meeting tomorrow.",
+  "imageBase64": null,
+  "imageMimeType": null,
+  "imageOcrText": null,
+  "events": [
+    {
+      "timestamp": "2025-10-04T10:00:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_001",
+      "deviceId": "device_001",
+      "payloadSize": 256
+    }
+  ],
+  "lookbackHours": 24
+}
+
+### 9. Combined analysis - High spam score
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/score
+Content-Type: application/json
+
+{
+  "userId": "user_spam_001",
+  "text": "FREE MONEY!!! WIN NOW!!! Click http://scam.com Call +1-555-0000 WhatsApp me!!!",
+  "imageBase64": null,
+  "imageMimeType": null,
+  "imageOcrText": null,
+  "events": [
+    {
+      "timestamp": "2025-10-04T02:00:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_001",
+      "deviceId": "device_001",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:01:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_002",
+      "deviceId": "device_002",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:02:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_003",
+      "deviceId": "device_003",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:03:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_004",
+      "deviceId": "device_004",
+      "payloadSize": 512
+    },
+    {
+      "timestamp": "2025-10-04T02:04:00Z",
+      "kind": "post",
+      "ipHash": "ip_hash_005",
+      "deviceId": "device_005",
+      "payloadSize": 512
+    }
+  ],
+  "lookbackHours": 24
+}
+
+### 10. Combined analysis - With image (Base64 encoded)
+### Note: This is a small sample. In practice, use actual base64 encoded image data
+POST {{AntiSpam_HostAddress}}/api/v1/analyze/score
+Content-Type: application/json
+
+{
+  "userId": "user_image_test_001",
+  "text": "Check out this amazing offer!",
+  "imageBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "imageMimeType": "image/png",
+  "imageOcrText": null,
+  "events": null,
+  "lookbackHours": 24
+}
+
+### ==========================================
+### HEALTH CHECK & UTILITY
+### ==========================================
+
+### 11. Test server health
+GET {{AntiSpam_HostAddress}}/
+Accept: text/html
+
+### 12. Check Swagger documentation
+GET {{AntiSpam_HostAddress}}/swagger/index.html
+Accept: text/html
+
+###
